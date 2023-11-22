@@ -1,41 +1,39 @@
-ï»¿/* System;
-using UnityEditor;
-using UnityEngine;
-
-namespace Assets.Scripts.Ally.Data
-{
-    public class AllyProperty : ScriptableObject
-    {
-        [MenuItem("Tools/MyTool/Do It in C#")]
-        static void DoIt()
-        {
-            EditorUtility.DisplayDialog("MyTool", "Do It in C# !", "OK", "");
-        }
-    }
-}*/
-
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class Property : MonoBehaviour
+public class AllyProperty : MonoBehaviour
 {
-    public string Name { get; private set; }
-    public Element Element { get; private set; }
+    public string pName = "not yet";
+    public Element element;
 
-    public Property(string name, Element element)
+    public enum Element
     {
-        Name = name;
-        Element = element;
+        Water,
+        Fire,
+        Grass,
+        Electric
+    }
+
+    private void Start()
+    {
+        // ·£´ıÀ¸·Î ¼Ó¼º ¼±ÅÃ
+        element = GetRandomElement();
+        pName = GetElementName();
+
+        // Ä³¸¯ÅÍ Á¤º¸ Ãâ·Â
+        DisplayInfo();
     }
 
     public void DisplayInfo()
     {
-        Debug.Log($"Name: {Name}\nElement: {GetElementName()}");
+        Debug.Log($"Name: {pName}\nElement: {GetElementName()}");
     }
 
     private string GetElementName()
     {
-        switch (Element)
+        switch (element)
         {
             case Element.Water:
                 return "Water";
@@ -49,24 +47,13 @@ public class Property : MonoBehaviour
                 return "Unknown";
         }
     }
-}
 
-public enum Element
-{
-    Water,
-    Fire,
-    Grass,
-    Electric
-}
-
-public class PropertyManager : MonoBehaviour
-{
     private Element GetRandomElement()
     {
-        // Seed ì„¤ì •
+        // Seed ¼³Á¤
         UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 
-        // 0ë¶€í„° 3ê¹Œì§€ ì¤‘ì—ì„œ ëœë¤ìœ¼ë¡œ ì„ íƒ
+        // 0ºÎÅÍ 3±îÁö Áß¿¡¼­ ·£´ıÀ¸·Î ¼±ÅÃ
         int randomValue = UnityEngine.Random.Range(0, 4);
 
         switch (randomValue)
@@ -80,19 +67,8 @@ public class PropertyManager : MonoBehaviour
             case 3:
                 return Element.Electric;
             default:
-                return Element.Water; // ê¸°ë³¸ì ìœ¼ë¡œ Waterë¡œ ì„¤ì •
+                return Element.Water; // ±âº»ÀûÀ¸·Î Water·Î ¼³Á¤
         }
     }
 
-    private void Start()
-    {
-        // ëœë¤ìœ¼ë¡œ ì†ì„± ì„ íƒ
-        Element randomElement = GetRandomElement();
-
-        // ëœë¤ìœ¼ë¡œ ì„ íƒëœ ì†ì„±ìœ¼ë¡œ ìºë¦­í„° ìƒì„±
-        Property randomProperty = new Property("RandomProperty", randomElement);
-
-        // ìºë¦­í„° ì •ë³´ ì¶œë ¥
-        randomProperty.DisplayInfo();
-    }
 }
