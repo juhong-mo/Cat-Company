@@ -1,0 +1,240 @@
+{
+  "OVERALL": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+  ],
+  "CAT": [
+    {},
+    {},
+    {},
+    {},
+    {}
+  ],
+  "EFFECTS": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+  ],
+  "SKILL": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+  ],
+  "BUTLER": [
+    {},
+    {},
+    {}
+  ],
+  "BUILDINGS": [
+    {},
+    {},
+    {},
+    {},
+    {},
+    {}
+  ],
+  "COIN": [
+    {
+      "fps : fish per second": "직급"
+    },
+    {
+      "fps : fish per second": "인턴"
+    },
+    {
+      "fps : fish per second": "사원"
+    },
+    {
+      "fps : fish per second": "mz"
+    },
+    {
+      "fps : fish per second": "부장"
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": null
+    },
+    {
+      "fps : fish per second": "보너스 활동"
+    },
+    {
+      "fps : fish per second": "통조림 캔 분리수거하기"
+    },
+    {
+      "fps : fish per second": "화장실 모래 채우기"
+    },
+    {
+      "fps : fish per second": "캣타워 정리하기"
+    },
+    {
+      "fps : fish per second": "장난감 수리하기"
+    }
+  ],
+  "TEST": [
+    {
+      "Name": "a",
+      "health": "100",
+      "attack": "1"
+    },
+    {
+      "Name": "b",
+      "health": "200",
+      "attack": "2"
+    },
+    {
+      "Name": "c",
+      "health": "300",
+      "attack": "3"
+    }
+  ]
+}
