@@ -1,264 +1,93 @@
+
+//적 오브젝트의 인공지능
+//state에 따라서 행동한다
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    //------------------------------------------------Declaration
-    //Data
-    public EnemyData enemyData;
-    public Transform finalTarget;
+    
+    //오브젝트 상태
+    private EnemyState state;
 
-    //Components
+    //오브젝트 물리 효과
     private Rigidbody2D rigid;
-    private SpriteRenderer spriter;
-    private ScanLogic scanLogic;
-    private EnemyLogic enemyLogic;
-    private EnemyAnimator enemyAnimator;
-    private LayerSettings layerSettings;
 
-    //States
-    private enum State
-    {
-        Die,
-        Idle,
-        Move,
-        MoveToTarget,
-        Attack
-    }
-    State state;
-
-    //Current Data
-    public float hp;
+    //공격 쿨타임
     private float coolTime;
 
-    //------------------------------------------------Declaration end
 
 
-    //------------------------------------------------Init & Debug
+    //----- 실행 부분 -----
+
     private void Awake()
     {
-        //Init
-        //Init Component
+        //오브젝트 처음 생성될 때 초기화
+        state = GetComponent<EnemyState>();
         rigid = GetComponent<Rigidbody2D>();
-        spriter = GetComponent<SpriteRenderer>();
-        scanLogic = GetComponent<ScanLogic>();
-        enemyLogic = GetComponent<EnemyLogic>();
-        enemyAnimator = GetComponent<EnemyAnimator>();
-        layerSettings = GetComponent<LayerSettings>();
 
-        //Init State
-        state = State.Idle;
-
-        //Init EnemyData
-        enemyData.Init();
-
-        //Init current Data
-        hp = enemyData.data.hp;
         coolTime = 0;
     }
+
 
     private void OnEnable()
     {
-        hp = enemyData.data.hp;
+        //활성화될 때 초기화
         coolTime = 0;
     }
 
 
-    private void Start()
-    {
-        //Debug
-        //EnemyData null -> set Active false this
-        if (enemyData == null)
-        {
-            Debug.Log("Enemy data missing");
-            this.gameObject.SetActive(false);
-            return;
-        }
-    }
-    //------------------------------------------------Init & Debug end
 
-
-    //------------------------------------------------Enemy AI
+    //Enemy의 인공지능 동작
     private void FixedUpdate()
     {
-        //Nearest target to this
-        Transform nearestTarget;
+        //공격 쿨타임 업데이트
+        coolTime += Time.fixedDeltaTime;
 
-        //Scan -> Set nearestTarget -> Check state
-        scanLogic.Scan(enemyData.data.scanRange, layerSettings.layerAlly);
-        nearestTarget = scanLogic.GetNearest();
-        state = StateCheck(nearestTarget);
-
-        //Cooldown for Attack
-        Cooldown(enemyData.data.cooldown);
-
-        //Do AI with EnemyLogic
-        switch (state)
+        
+        switch (state.state)
         {
-            case State.Die:
-                enemyLogic.Die();
+            case EnemyState.State.Die:
+                //죽음
                 break;
 
-            case State.Idle:
+            case EnemyState.State.Idle:
+                //유휴 상태
                 break;
 
-            case State.Move:
-                enemyLogic.MoveToTarget(rigid, finalTarget, enemyData.data.speed);
+            case EnemyState.State.Move:
+                Vector2 dirVec = state.curTarget.position - transform.position;                   //이동 방향
+                Vector2 moveVec = dirVec.normalized * state.enemyData.data.speed * Time.fixedDeltaTime;     //이동 속도
+                rigid.MovePosition(rigid.position + moveVec);                                               //물리 이동
                 break;
 
-            case State.Attack:
-                if (Cooldown())
-                    enemyLogic.Attack(nearestTarget, enemyData.data.damage, enemyData.data.cooldown);
-                break;
-
-            case State.MoveToTarget:
-                enemyLogic.MoveToTarget(rigid, nearestTarget, enemyData.data.speed);
-                break;
-
-            default:
-                break;
-        }
-
-        //Do not slip
-        rigid.velocity = Vector2.zero;
-
-    }
-    //------------------------------------------------Enemy AI end
-
-
-    //------------------------------------------------Enemy Animation
-    private void LateUpdate()
-    {
-        Transform nearestTarget;
-        nearestTarget= scanLogic.GetNearest();
-
-
-
-        //Do Animation with EnemyAnimator
-        switch (state)
-        {
-            case State.Die:
-                enemyAnimator.Die();
-                break;
-
-            case State.Idle:
-                break;
-
-            case State.Move:
-                enemyAnimator.Move(spriter, finalTarget);
-                break;
-
-            case State.Attack:
-                if(Cooldown())
+            case EnemyState.State.Attack:
+                //공격 쿨타임이 돌았다면 공격
+                if (coolTime > state.enemyData.data.cooldown)      
                 {
-                    enemyAnimator.Attack(spriter, nearestTarget);
-                    CooldownReset(enemyData.data.cooldown);
+                    //데미지만큼 공격
+                    if (state.curTarget != state.finalTarget)           //건물이 아닐 때
+                        state.curTarget.GetComponent<AllyState>().Hit(state.enemyData.data.damage);
+
+                    if (state.curTarget == state.finalTarget)           //Base 일 때
+                        StageManager.Instance.hp -= (int)state.enemyData.data.damage;
+
+                    //공격 쿨타임 초기화
+                    coolTime = 0;
                 }
                 break;
 
-            case State.MoveToTarget:
-                enemyAnimator.MoveToTarget(spriter, nearestTarget);
-                break;
-                
             default:
                 break;
         }
 
-
-
-        //Active false
-        if(hp < 0)
-        {
-            gameObject.SetActive(false);
-        }
     }
-    //------------------------------------------------Enemy Animation end
 
-
-    //------------------------------------------------Method
-
-    /** StateCheck Method
-     * check State with ScanLogic & EnemyData
-     * this hp 0                                  -> return Die
-     * finalTarget is null                      -> return Idle
-     * nearestTarget is null                    -> return Move
-     * nearestTarget distance less than attackRange -> return Attack
-     * nearestTarget distance less than scanRange -> return MoveToTarget
-     */
-    private State StateCheck(Transform nearestTarget)
+    private void Update()
     {
-        if (hp <= 0)
-        {
-            return State.Die;
-        }
-        if (finalTarget == null)
-        {
-            return State.Idle;
-        }
-        if (nearestTarget == null)
-        {
-            return State.Move;
-        }
-
-        // Distance between this and nearestTarget
-        float nearestTargetDis;
-        nearestTargetDis = Vector2.Distance(nearestTarget.position, transform.position);
-
-        if (nearestTargetDis < enemyData.data.attackRange)
-        {
-            return State.Attack;
-        }
-        if (nearestTargetDis < enemyData.data.scanRange)
-        {
-            return State.MoveToTarget;
-        }
-        
-        return state;
+        //물리효과, 오브젝트의 미끄러짐 방지
+        rigid.velocity = Vector2.zero;
     }
-
-
-
-    /** Hit Method
-     * hit trigger on
-     * take damage
-     */
-    public void Hit(float damage)
-    {
-        hp -= damage;
-    }
-
-
-
-    /** Cooldown Methods
-     */
-    //cooldown for fixedUpdate
-    private void Cooldown(float cooldown)
-    {
-        coolTime -= Time.fixedDeltaTime;
-    }
-
-    //check restTime
-    private bool Cooldown()
-    {
-        if(coolTime <= 0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    //reset restTime
-    private void CooldownReset(float cooldown)
-    {
-        coolTime = cooldown;
-    }
-
-
-
-    //------------------------------------------------Method end
-
 }

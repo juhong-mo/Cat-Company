@@ -1,290 +1,97 @@
+
+//아군의 인공지능 스크립트
+//state에 따라서 행동한다
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AllyController : MonoBehaviour
 {
-    //------------------------------------------------Declaration
-    //Data
-    public AllyData allyData;
+    //오브젝트 상태
+    private AllyState state;
 
-    //Components
+    //오브젝트 물리 효과
     private Rigidbody2D rigid;
-    private SpriteRenderer spriter;
-    private ScanLogic scanLogic;
-    private AllyLogic allyLogic;
-    private AllyAnimator allyAnimator;
-    private LayerSettings layerSettings;
 
-    public GameObject g1;
-    public GameObject g2;
-    public GameObject g3;
-
-
-    //States
-    private enum State
-    {
-        Die,
-        Idle,
-        MoveToTarget,
-        Attack
-    }
-    State state;
-
-    //Current Data
-    public float hp;
+    //공격 쿨타임
     private float coolTime;
 
-    //------------------------------------------------Declaration end
 
 
-    //------------------------------------------------Init & Debug
+    //----- 실행 부분 -----
+
     private void Awake()
     {
-        //Init
-        //Init Component
+        //오브젝트 처음 생성될 때 초기화
+        state = GetComponent<AllyState>();
         rigid = GetComponent<Rigidbody2D>();
-        spriter = GetComponent<SpriteRenderer>();
-        scanLogic = GetComponent<ScanLogic>();
-        allyLogic = GetComponent<AllyLogic>();
-        allyAnimator = GetComponent<AllyAnimator>();
-        layerSettings = GetComponent<LayerSettings>();
 
-        //Init State
-        state = State.Idle;
-
-        //Init AllyData
-        allyData.Init();
-
-        //Init current Data
-        hp = allyData.data.hp;
         coolTime = 0;
     }
 
 
-    private void Start()
+    private void OnEnable()
     {
-        //Debug
-        //AllyData null -> set Active false this
-        if (allyData == null)
-        {
-            Debug.Log("Ally data missing");
-            this.gameObject.SetActive(false);
-            return;
-        }
+        //활성화될 때 초기화
+        coolTime = 0;
     }
-    //------------------------------------------------Init & Debug end
 
 
-    //------------------------------------------------Mouse WIP
-
-    //Collider2D otherC = null;
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        //otherC = collision;
-        if (collision.gameObject.tag == "1" && gameObject.tag == "3")
-        {
-
-            gameObject.SetActive(false);
-            collision.gameObject.SetActive(false);
-
-            Instantiate(g1);
-        }
-        if (collision.gameObject.tag == "1" && gameObject.tag == "2")
-        {
-
-            gameObject.SetActive(false);
-            collision.gameObject.SetActive(false);
-
-
-            Instantiate(g2);
-        }
-        if (collision.gameObject.tag == "2" && gameObject.tag == "2")
-        {
-
-            gameObject.SetActive(false);
-            collision.gameObject.SetActive(false);
-
-
-            Instantiate(g3);
-        }
-    }
+    //마우스로 잡아서 이동
     private void OnMouseDrag()
     {
         Vector2 pos = (Vector2)Camera.main.ScreenToWorldPoint(Input.mousePosition);
         transform.position = (Vector3)pos;
-
-        
     }
 
 
-    //------------------------------------------------Mouse end
-
-
-    //------------------------------------------------Ally AI
+    //Enemy의 인공지능 동작
     private void FixedUpdate()
     {
-        //Nearest target to this
-        Transform nearestTarget;
+        //공격 쿨타임 업데이트
+        coolTime += Time.fixedDeltaTime;
 
-        //Scan -> Set nearestTarget -> Check state
-        scanLogic.Scan(allyData.data.scanRange, layerSettings.layerEnemy);
-        nearestTarget = scanLogic.GetNearest();
-        state = StateCheck(nearestTarget);
 
-        Debug.Log(state);
-
-        //Cooldown for Attack
-        Cooldown(allyData.data.cooldown);
-
-        //Do AI with AllyLogic
-        switch (state)
+        switch (state.state)
         {
-            case State.Die:
-                allyLogic.Die();
+            case AllyState.State.Die:
+                //죽음
                 break;
 
-            case State.Idle:
+            case AllyState.State.Idle:
+                //유휴 상태
                 break;
 
-            case State.Attack:
-                if (Cooldown())
-                    allyLogic.Attack(nearestTarget, allyData.data.damage, allyData.data.cooldown);
+            case AllyState.State.Move:
+                Vector2 dirVec = state.curTarget.position - transform.position;                   //이동 방향
+                Vector2 moveVec = dirVec.normalized * state.allyData.data.speed * Time.fixedDeltaTime;     //이동 속도
+                rigid.MovePosition(rigid.position + moveVec);                                               //물리 이동
                 break;
 
-            case State.MoveToTarget:
-                allyLogic.MoveToTarget(rigid, nearestTarget, allyData.data.speed);
-                break;
-
-            default:
-                break;
-        }
-
-        //Do not slip
-        rigid.velocity = Vector2.zero;
-
-    }
-    //------------------------------------------------Ally AI end
-
-
-    //------------------------------------------------Ally Animation
-    private void LateUpdate()
-    {
-        Transform nearestTarget;
-        nearestTarget = scanLogic.GetNearest();
-
-
-
-        //Do Animation with AllyAnimator
-        switch (state)
-        {
-            case State.Die:
-                allyAnimator.Die();
-                break;
-
-            case State.Idle:
-                break;
-
-            case State.Attack:
-                if (Cooldown())
+            case AllyState.State.Attack:
+                //공격 쿨타임이 돌았다면 공격
+                if (coolTime > state.allyData.data.cooldown)
                 {
-                    allyAnimator.Attack(spriter, nearestTarget);
-                    CooldownReset(allyData.data.cooldown);
+                    //데미지만큼 공격
+                    state.curTarget.GetComponent<EnemyState>().Hit(state.allyData.data.damage);
+
+                    //공격 쿨타임 초기화
+                    coolTime = 0;
                 }
                 break;
 
-            case State.MoveToTarget:
-                allyAnimator.MoveToTarget(spriter, nearestTarget);
-                break;
-
             default:
                 break;
         }
 
-
-        //Destroy this
-        if (hp < 0)
-        {
-            gameObject.SetActive(false);
-        }
     }
-    //------------------------------------------------Ally Animation end
 
-
-    //------------------------------------------------Method
-
-    /** StateCheck
-     * check State with ScanLogic & AllyData
-     * this hp 0                                  -> return Die
-     * nearestTarget is null                      -> return Idle
-     * nearestTarget distance less than attackRange -> return Attack
-     * nearestTarget distance less than scanRange -> return MoveToTarget
-     */
-    private State StateCheck(Transform nearestTarget)
+    private void Update()
     {
-        if (hp <= 0)
-        {
-            return State.Die;
-        }
-        if (nearestTarget == null)
-        {
-            return State.Idle;
-        }
-
-        // Distance between this and nearestTarget
-        float nearestTargetDis;
-        nearestTargetDis = Vector2.Distance(nearestTarget.position, transform.position);
-
-        if (nearestTargetDis < allyData.data.attackRange)
-        {
-            return State.Attack;
-        }
-        if (nearestTargetDis < allyData.data.scanRange)
-        {
-            return State.MoveToTarget;
-        }
-
-        return state;
+        //물리효과, 오브젝트의 미끄러짐 방지
+        rigid.velocity = Vector2.zero;
     }
 
 
-
-    /** Hit
-     * hit trigger on
-     * take damage
-     */
-    public void Hit(float damage)
-    {
-        hp -= damage;
-    }
-
-    /** Cooldown Methods
-     */
-    //cooldown for fixedUpdate
-    private void Cooldown(float cooldown)
-    {
-        coolTime -= Time.fixedDeltaTime;
-    }
-
-    //check restTime
-    private bool Cooldown()
-    {
-        if (coolTime <= 0)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    //reset restTime
-    private void CooldownReset(float cooldown)
-    {
-        coolTime = cooldown;
-    }
-
-    //------------------------------------------------Method end
 }

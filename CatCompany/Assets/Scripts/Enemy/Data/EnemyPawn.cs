@@ -19,4 +19,5 @@ public class EnemyPawn : EnemyData
         data.attackRange = 1;
         data.scanRange = 5;
     }
+    
 }
