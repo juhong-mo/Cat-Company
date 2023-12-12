@@ -3,24 +3,54 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class Ally : MonoBehaviour
+{
+    [SerializeField]
+    protected int health = 100; // 예시로 health를 100으로 초기화
+
+    private void Start()
+    {
+        // 예시로 객체가 생성될 때 AllySkill 스크립트에 접근하여 스킬을 적용
+        AllySkill allySkill = GetComponent<AllySkill>();
+        if (allySkill != null)
+        {
+            allySkill.ApplySkill(this);
+        }
+    }
+
+    public void ApplySkill(Skill skill)
+    {
+        if (skill != null)
+        {
+            health -= skill.GetDamage();
+            Debug.Log("Health after applying damage: " + health);
+        }
+        else
+        {
+            Debug.Log("No skill assigned, no damage applied");
+        }
+    }
+}
+
 public class AllySkill : MonoBehaviour
 {
     private Skill skill;
-    void Start()
+
+    public void ApplySkill(Ally ally)
     {
         AssignRandomSkill();
         DisplaySkill();
+        ally.ApplySkill(skill);
     }
 
     void Update()
     {
-
+        // 추가적인 로직이 필요한 경우 여기에 작성
     }
 
     private void AssignRandomSkill()
     {
-        System.Random random = new System.Random();
-        int skillIndex = random.Next(1, 6);
+        int skillIndex = UnityEngine.Random.Range(1, 6);
 
         skill = null;
 
@@ -39,7 +69,7 @@ public class AllySkill : MonoBehaviour
                 skill = new Fireworks();
                 break;
             case 5:
-                skill = new FishingMaster();
+                skill = new FishingMaster(0);
                 break;
             default:
                 Debug.Log("Invalid skill index");
@@ -60,6 +90,7 @@ public class AllySkill : MonoBehaviour
         }
     }
 }
+
 
 public abstract class Skill
 {
