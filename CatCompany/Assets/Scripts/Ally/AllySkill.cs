@@ -2,32 +2,49 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
+
 
 public class Ally : MonoBehaviour
 {
-    [SerializeField]
-    protected int health = 100; // 예시로 health를 100으로 초기화
-
     private void Start()
     {
-        // 예시로 객체가 생성될 때 AllySkill 스크립트에 접근하여 스킬을 적용
+        // 객체가 생성될 때 스킬을 적용
         AllySkill allySkill = GetComponent<AllySkill>();
         if (allySkill != null)
         {
-            allySkill.ApplySkill(this);
+            allySkill.AssignRandomSkill(); // 초기 스킬 할당
         }
     }
 
-    public void ApplySkill(Skill skill)
+    private void Update()
     {
-        if (skill != null)
+        // 키 입력 스킬 발동
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            health -= skill.GetDamage();
-            Debug.Log("Health after applying damage: " + health);
+            ApplySkill();
         }
-        else
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            Debug.Log("No skill assigned, no damage applied");
+            ActivateSkill();
+        }
+    }
+
+    private void ApplySkill()
+    {
+        AllySkill allySkill = GetComponent<AllySkill>();
+        if (allySkill != null)
+        {
+            allySkill.ApplySkill();
+        }
+    }
+
+    private void ActivateSkill()
+    {
+        AllySkill allySkill = GetComponent<AllySkill>();
+        if (allySkill != null)
+        {
+            allySkill.ActivateSkill();
         }
     }
 }
@@ -36,19 +53,7 @@ public class AllySkill : MonoBehaviour
 {
     private Skill skill;
 
-    public void ApplySkill(Ally ally)
-    {
-        AssignRandomSkill();
-        DisplaySkill();
-        ally.ApplySkill(skill);
-    }
-
-    void Update()
-    {
-        // 추가적인 로직이 필요한 경우 여기에 작성
-    }
-
-    private void AssignRandomSkill()
+    public void AssignRandomSkill()
     {
         int skillIndex = UnityEngine.Random.Range(1, 6);
 
@@ -69,7 +74,7 @@ public class AllySkill : MonoBehaviour
                 skill = new Fireworks();
                 break;
             case 5:
-                skill = new FishingMaster(0);
+                skill = new FishingMaster();
                 break;
             default:
                 Debug.Log("Invalid skill index");
@@ -77,6 +82,42 @@ public class AllySkill : MonoBehaviour
         }
     }
 
+    public void ApplySkill()
+    {
+        if (skill != null)
+        {
+            Enemy enemy = FindObjectOfType<Enemy>(); // Enemy 찾아서 사용
+            if (enemy != null)
+            {
+                int health = enemy.GetHealth();
+                health -= skill.GetDamage();
+                Debug.Log("Enemy's health after applying damage: " + health);
+            }
+            else
+            {
+                Debug.Log("No enemy found");
+            }
+        }
+        else
+        {
+            Debug.Log("No skill assigned, no damage applied");
+        }
+    }
+
+    public void ActivateSkill()
+    {
+        if (skill != null)
+        {
+            Debug.Log("Activating skill:");
+            skill.Display();
+            Debug.Log("Damage: " + skill.GetDamage());
+            // 추가 스킬 발동
+        }
+        else
+        {
+            Debug.Log("No skill assigned");
+        }
+    }
     private void DisplaySkill()
     {
         if (skill != null)
