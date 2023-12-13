@@ -86,10 +86,10 @@ public class AllySkill : MonoBehaviour
     {
         if (skill != null)
         {
-            Enemy enemy = FindObjectOfType<Enemy>(); // Enemy 찾아서 사용
+            EnemyState enemy = FindObjectOfType<EnemyState>(); // Enemy 찾아서 사용
             if (enemy != null)
             {
-                int health = enemy.GetHealth();
+                float health = enemy.GetHealth(); //no GetHealth //임시로만듦....작동은안할것
                 health -= skill.GetDamage();
                 Debug.Log("Enemy's health after applying damage: " + health);
             }

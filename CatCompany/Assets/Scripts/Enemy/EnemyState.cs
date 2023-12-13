@@ -94,6 +94,12 @@ public class EnemyState : MonoBehaviour
     }
 
 
+    public float GetHealth()
+    {
+        return curHp;
+    }
+
+
     //----- 실행 부분 -----
     private void Awake()
     {
