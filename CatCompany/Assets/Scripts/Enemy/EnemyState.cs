@@ -152,6 +152,7 @@ public class EnemyState : MonoBehaviour
         {
             gameObject.SetActive(false);
             StageManager.Instance.gold += 10;
+            --StageManager.Instance.curEnemy;
         }
     }
 }

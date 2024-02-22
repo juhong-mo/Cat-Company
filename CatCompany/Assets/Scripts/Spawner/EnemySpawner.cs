@@ -23,7 +23,7 @@ public class EnemySpawner : MonoBehaviour
     //---데이터에 맞게 다른 종류의 스포너를 만든다
 
     //소환에 필요한 변수들
-    public float cooldown = 5;      //소환 쿨타임
+    public float cooldown = 10;      //소환 쿨타임
     private float timer = 0;        //소환 타이머
 
 
@@ -63,13 +63,14 @@ public class EnemySpawner : MonoBehaviour
 
         //적 소환 부분
         //현재 디펜스 상황이라면 적을 소환한다
-        if (StageManager.Instance.isDefense)
+        if (StageManager.Instance.isDefense && StageManager.Instance.curTime > 0)
         {
             //쿨타임마다 풀에 할당
             if (timer > cooldown)
             {
                 GetPool(0);
                 timer = 0;
+                ++StageManager.Instance.curEnemy;
             }
         }
 

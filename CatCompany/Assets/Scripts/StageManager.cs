@@ -19,18 +19,22 @@ public class StageManager : Singleton<StageManager>
     public bool isDefense = false;
 
     //스테이지 시간 변수들
-    public float readyTime = 0;     //첫번째 스테이지 시작까지 준비 시간
-    public float defenseTime = 10;  //한번의 디펜스가 소요하는 시간
-    public float restTime = 5;     //휴식 시간
+    public float readyTime = 30;     //스테이지 시작까지 준비 시간
+    public float defenseTime = 30;  //한번의 디펜스가 소요하는 시간
     public float curTime = 0;       //스테이지 현재 남은 시간
 
     //현재 스테이지 레벨
     public int stageLevel = 0;
 
-
     //게임 플레이 변수
     public int gold = 100;          //돈
     public int hp = 1000;           //플레이어 체력
+
+    public int curEnemy = 0;
+
+    //아군 스폰 UI 오브젝트
+    public GameObject pawnSpawn;
+    public GameObject royalSpawn;
 
 
     //-------------------- 메소드들 --------------------
@@ -41,6 +45,8 @@ public class StageManager : Singleton<StageManager>
         isDefense = false;
         curTime = readyTime;
         stageLevel = 0;
+        pawnSpawn.gameObject.SetActive(true);
+        royalSpawn.gameObject.SetActive(true);
     }
 
     //스테이지 타이머
@@ -57,27 +63,31 @@ public class StageManager : Singleton<StageManager>
         //디펜스 활성화 -> 스테이지 레벨 상승
         if (curTime < 0)
         {
-            if (isDefense)
+            if (isDefense && curEnemy == 0)
             {
                 isDefense = false;
-                curTime = restTime;
+                curTime = readyTime;
                 gold += 200;
+                pawnSpawn.gameObject.SetActive(true);
+                royalSpawn.gameObject.SetActive(true);
             }
-            else
+            else if (!isDefense)
             {
                 isDefense = true;
                 curTime = defenseTime;
                 stageLevel += 1;
+                pawnSpawn.gameObject.SetActive(false);
+                royalSpawn.gameObject.SetActive(false);
             }
         }
     }
-
 
     //-------------------- 실행 부분 --------------------
 
     private void Awake()
     {
         //인스턴스가 처음 생성될 때 초기화
+        base.Awake();
         Initialize();
     }
 

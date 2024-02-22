@@ -28,7 +28,7 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
             if (instance == null)
             {
                 instance = (T)FindObjectOfType(typeof(T));
-                if (instance != null)
+                if (instance == null)
                 {
                     GameObject obj = new GameObject(typeof(T).Name, typeof(T));
                     instance = obj.GetComponent<T>();
@@ -39,7 +39,7 @@ public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     }
 
 
-    private void Awake()
+    protected void Awake()
     {
         //씬이 전환되어도 오브젝트를 파괴하지 않음
         //오브젝트의 부모도 마찬가지로 파괴하지 않음
